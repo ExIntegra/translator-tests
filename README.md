@@ -116,9 +116,8 @@ libretranslate --load-only en,ru
 2. После запуска сервер будет доступен по адресу:
 http://127.0.0.1:5000
 
-![Скриншот работы программы](images/screenshot.png)
+![Скриншот работы программы](image/interface-libre-translate.png)
 
-*Рисунок 1 — пример работы с интерфейсом LibreTranslate*
 ---
 
 ## Ручная проверка API через curl
