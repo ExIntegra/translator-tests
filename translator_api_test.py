@@ -5,30 +5,41 @@ from pathlib import Path
 
 import requests
 
+# Настраиваем кодировку на utf-8
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+# Константы для endpoint сайта и отчета
 BASE_URL = "http://127.0.0.1:5000"
 REPORT_FILE = Path("report.csv")
 
+
+# Описываем тесты для тестирования API переводчика
 test_cases = [
+    # Тест на вывод списка языков поддерживающих в переводчике
     {
         "id": "TC-01",
         "name": "Получение списка языков",
-        "method": "GET",
+        "method": "GET", #http-method
         "url": f"{BASE_URL}/languages",
         "expected_status": 200,
         "type": "languages"
     },
+    # Перевод hello с английского на русский.
     {
         "id": "TC-02",
         "name": "Перевод hello en->ru",
         "method": "POST",
         "url": f"{BASE_URL}/translate",
-        "payload": {"q": "hello", "source": "en", "target": "ru", "format": "text"},
-        "expected_status": 200,
-        "type": "translate"
+        # Тело запроса
+        # q - текст дял перевода
+        # source - исходный язык
+        # format - тип текста
+        "payload": {"q": "hello", "source": "en", "target": "ru", "format": "text"}, 
+        "expected_status": 200, # Какой http-ответ должен вернуть сервер
+        "type": "translate" # Тип логической проверки
     },
+    # Перевод Доброе утро с русского на английский.
     {
         "id": "TC-03",
         "name": "Перевод Доброе утро ru->en",
@@ -39,6 +50,7 @@ test_cases = [
         "type": "translate"
     },
     {
+    # Автоопределение языка
         "id": "TC-04",
         "name": "Автоопределение языка en->ru",
         "method": "POST",
@@ -47,6 +59,7 @@ test_cases = [
         "expected_status": 200,
         "type": "auto_translate"
     },
+    # Отправка пустой строки
     {
         "id": "TC-05",
         "name": "Пустая строка",
@@ -56,6 +69,7 @@ test_cases = [
         "expected_status": 400,
         "type": "negative"
     },
+    # Неверный исходный язык xx.
     {
         "id": "TC-06",
         "name": "Неверный source",
@@ -65,6 +79,7 @@ test_cases = [
         "expected_status": 400,
         "type": "negative"
     },
+    # Неверный целевой язык zz.
     {
         "id": "TC-07",
         "name": "Неверный target",
@@ -76,13 +91,21 @@ test_cases = [
     },
 ]
 
+# Превращаем ответ сервера в JSON
 def safe_json(response):
     try:
         return response.json()
-    except Exception:
+    except Exception: # Если сервер не вернул JSON, а текст (в случае ошибки), избегаем падение
         return {"raw_text": response.text}
 
+# Функция проверки ответа сервера. Определяет пройден тест или нет и почему.
+# case - описание ответа
+# response - http-ответ
+# data - разобраный JSON
+# Возвращает true или false
 def validate_case(case, response, data):
+    # Проверка http-кода с ожидаемым.
+    # Ожидаем 200, получили 400 - тест провален.
     if response.status_code != case["expected_status"]:
         return False, f"Ожидался HTTP {case['expected_status']}, получен HTTP {response.status_code}"
 
@@ -133,7 +156,7 @@ def validate_case(case, response, data):
         return False, "Ожидалась ошибка, но запрос завершился успешно"
 
     return True, "OK"
-
+# Функция для запуска теста
 def run_test(case):
     try:
         if case["method"] == "GET":
@@ -144,6 +167,7 @@ def run_test(case):
         data = safe_json(response)
         passed, comment = validate_case(case, response, data)
 
+        # Формируем ответ для отчета
         return {
             "id": case["id"],
             "name": case["name"],
@@ -165,8 +189,10 @@ def run_test(case):
             "comment": "Ошибка выполнения запроса",
         }
 
+# Запускаем все тесты
 results = [run_test(case) for case in test_cases]
 
+# Сохраняем отчета в CSV
 with open(REPORT_FILE, "w", newline="", encoding="utf-8-sig") as f:
     writer = csv.DictWriter(
         f,
@@ -176,6 +202,7 @@ with open(REPORT_FILE, "w", newline="", encoding="utf-8-sig") as f:
     writer.writeheader()
     writer.writerows(results)
 
+# Подсчет статистики сколько тест пройдено, сколько провалено
 passed = sum(1 for r in results if r["status"] == "PASSED")
 failed = sum(1 for r in results if r["status"] == "FAILED")
 
