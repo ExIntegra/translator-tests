@@ -128,22 +128,31 @@ http://127.0.0.1:5000
 ```cmd
 curl -s http://127.0.0.1:5000/languages
 ```
+![Вывод при запросе списка языков перевода](image/list-of-languages.png)
+
 Перевод текста с английского на русский
 ```cmd
 curl -s -X POST "http://127.0.0.1:5000/translate" -H "Content-Type: application/json" -d "{\"q\":\"hello\",\"source\":\"en\",\"target\":\"ru\",\"format\":\"text\"}"
 ```
+![Вывод при переводе с английского на русский](image/translate-en-ru.png)
+
 Негативный тест: пустая строка
 ```cmd
 curl -s -X POST "http://127.0.0.1:5000/translate" -H "Content-Type: application/json" -d "{\"q\":\"\",\"source\":\"en\",\"target\":\"ru\",\"format\":\"text\"}"
 ```
+![Вывод при запросе с пустой строкой](image/empty-string.png)
+
 Негативный тест: неверный исходный язык
 ```cmd
 curl -s -X POST "http://127.0.0.1:5000/translate" -H "Content-Type: application/json" -d "{\"q\":\"hello\",\"source\":\"xx\",\"target\":\"ru\",\"format\":\"text\"}"
 ```
+![Вывод ошибки при выборе не поддерживаюего исходного языка](image/translate-xx-ru.png)
+
 Негативный тест: неверный целевой язык
 ```cmd
 curl -s -X POST "http://127.0.0.1:5000/translate" -H "Content-Type: application/json" -d "{\"q\":\"hello\",\"source\":\"en\",\"target\":\"zz\",\"format\":\"text\"}"
 ```
+![Вывод ошибки при выборе не поддерживаемого целевого языка](image/translate-en-zz.png)
 ---
 
 ## Запуск автотестов
